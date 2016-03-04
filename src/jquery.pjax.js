@@ -340,7 +340,15 @@
 			pjax.xhr.onreadystatechange = $.noop;
 			pjax.xhr.abort();
 		}
-		pjax.xhr = $.ajax(pjax.options);
+		/**
+		 * 使用新自定义函数建立真实url和请求url的关系
+		 * @type {Object}
+		 */
+		var mixobj={url:options.url};
+		if (typeof options.fnUrl==='function') {
+			mixobj.url=options.fnUrl(options.url);
+		};
+		pjax.xhr = $.ajax($.extend(true,{},pjax.options,mixobj));
 	};
 
 	// popstate event
@@ -388,5 +396,33 @@
 	if ($.inArray('state', $.event.props) < 0) {
 		$.event.props.push('state')
 	}
+
+})(jQuery);
+(function($) {
+	$(document).ready(function() {
+		$.pjax({
+        selector: 'a[data-pjax]',
+        container: '#pjax', //内容替换的容器
+        show: 'fade',  //展现的动画，支持默认和fade, 可以自定义动画方式，这里为自定义的function即可。
+        cache: false,  //是否使用缓存
+        storage: false,  //是否使用本地存储
+        titleSuffix: '_国搜视点', //标题后缀
+        fnUrl: function(url) {
+				var rt = url.replace('.html', '-pjax.html');
+				return rt
+			},
+        callback: function(sta){
+        	console.log(sta);
+        }
+    })
+
+		$('#pjax').bind('pjax.start', function() {
+			$('#loading').show();
+		})
+		$('#pjax').bind('pjax.end', function() {
+			$('#loading').hide();
+		})
+
+	});
 
 })(jQuery);
